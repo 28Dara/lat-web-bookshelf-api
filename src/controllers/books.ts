@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import Book from "../models/book.js";
+import mongoose from "mongoose";
 
 export const getBooks = async (req: Request, res: Response) => {
   const books = await Book.find({});
@@ -7,7 +8,13 @@ export const getBooks = async (req: Request, res: Response) => {
 };
 
 export const getBookById = async (req: Request, res: Response) => {
-  const book = await Book.findById(req.params.id);
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(String(id))) {
+    return res.status(400).send({ message: "ID inválido" });
+  }
+
+  const book = await Book.findById(id);
   res.send(book);
 };
 
@@ -22,8 +29,14 @@ export const createBook = async (req: Request, res: Response) => {
 };
 
 export const updateBook = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(String(id))) {
+    return res.status(400).send({ message: "ID inválido" });
+  }
+
   const book = await Book.findByIdAndUpdate(
-    req.params.id,
+    id,
     { title: req.body.title },
     { new: true },
   );
@@ -31,7 +44,13 @@ export const updateBook = async (req: Request, res: Response) => {
 };
 
 export const deleteBook = async (req: Request, res: Response) => {
-  const book = await Book.findByIdAndDelete(req.params.id);
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(String(id))) {
+    return res.status(400).send({ message: "ID inválido" });
+  }
+
+  const book = await Book.findByIdAndDelete(id);
   if (!book) {
     return res.status(404).send({ message: "Libro no encontrado" });
   }
